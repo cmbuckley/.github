@@ -1,0 +1,22 @@
+name: Keep Workflows Alive
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '5 0 1 * *'
+
+permissions:
+  actions: write
+  
+jobs:
+  keepalive:
+    name: Keep Workflows Alive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep workflows alive
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/$GH_REPO/actions/workflows -q '.workflows[].url' | while read workflow; do
+            gh api -X PUT "$workflow/enable"
+          done
