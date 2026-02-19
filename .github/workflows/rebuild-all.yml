@@ -1,4 +1,4 @@
-name: Rebuild (New Year)
+name: Rebuild All Pages
 on:
   workflow_dispatch:
   schedule:
@@ -17,6 +17,7 @@ jobs:
           gh api users/$GH_USER/repos -X GET -f type=public --paginate -q \
           '.[] | select(.has_pages == true and .fork == false and (any(.topics[]; contains("noindex")) | not)) | .url' \
             | while read repo; do
-              echo "$repo:"
+              echo -n "$repo: "
               gh api $repo/pages/builds -X POST
+              echo
             done
