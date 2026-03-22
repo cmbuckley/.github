@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       environment_url:
-        required: true
+        required: false
         type: string
 
 jobs:
@@ -32,7 +32,8 @@ jobs:
     needs: build
     environment:
       name: github-pages
-      url: ${{ inputs.environment_url }}
+      url: ${{ inputs.environment_url || steps.deploy.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
+      - id: deploy
+        name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
