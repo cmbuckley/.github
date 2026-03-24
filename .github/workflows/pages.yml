@@ -32,8 +32,13 @@ jobs:
     needs: build
     environment:
       name: github-pages
-      url: ${{ inputs.environment_url || steps.deploy.outputs.page_url }}
+      url: ${{ steps.get_url.outputs.url }}
     steps:
       - id: deploy
         name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
+      - id: get_url
+        name: Get page URL
+        run:
+          url=$(sed 's/^http:/https:/' <<< "${{ inputs.environment_url || steps.deploy.outputs.page_url }}")
+          echo "url=$url" >> $GITHUB_OUTPUT
