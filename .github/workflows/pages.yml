@@ -3,6 +3,16 @@ on:
   workflow_call:
     inputs:
       environment_url:
+        description: Environment URL
+        required: false
+        type: string
+      deploy_enabled:
+        description: Deploy to Pages
+        required: false
+        type: boolean
+        default: true
+      custom_commands:
+        description: Custom build commands
         required: false
         type: string
 
@@ -18,6 +28,10 @@ jobs:
         with:
           bundler-cache: true
 
+      - name: Run custom build commands
+        if: ${{ inputs.custom_commands }}
+        run: ${{ inputs.custom_commands }}
+
       - name: Set up Pages
         uses: actions/configure-pages@v5
 
@@ -29,6 +43,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ inputs.deploy_enabled }}
     needs: build
     environment:
       name: github-pages
@@ -37,6 +52,7 @@ jobs:
       - id: deploy
         name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
+
       - id: get_url
         name: Get page URL
         run:
