@@ -2,6 +2,11 @@ name: Deploy Jekyll site to Pages
 on:
   workflow_call:
     inputs:
+      environment:
+        description: Jekyll environment
+        required: false
+        type: string
+        default: production
       environment_url:
         description: Environment URL
         required: false
@@ -36,7 +41,10 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: ${{ inputs.environment }}
+          JEKYLL_GITHUB_TOKEN: ${{ github.token }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
