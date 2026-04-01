@@ -47,7 +47,7 @@ jobs:
           JEKYLL_GITHUB_TOKEN: ${{ github.token }}
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@0ca16172ca884f0a37117fed41734f29784cc980 # main, awaiting tag for include-hidden-files
         with:
           include-hidden-files: true
 
