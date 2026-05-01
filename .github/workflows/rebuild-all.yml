@@ -15,9 +15,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN_REBUILD }}
         run: |
           gh api users/$GH_USER/repos -X GET -f type=public --paginate -q \
-          '.[] | select(.has_pages == true and .fork == false and (any(.topics[]; contains("noindex")) | not)) | .url' \
+          '.[] | select(.has_pages == true and .fork == false and (any(.topics[]; contains("noindex")) | not)) | .full_name' \
             | while read repo; do
-              echo -n "$repo: "
-              gh api $repo/pages/builds -X POST
+              echo $repo
+              gh api repos/$repo/dispatches -f event_type=pages
               echo
             done

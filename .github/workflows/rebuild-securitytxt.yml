@@ -17,9 +17,13 @@ jobs:
           limit=$(date -d 'now + 1 month' +%s)
           gh search code --owner=$GH_USER --match=path security.txt --json repository -q \
             '.[].repository.nameWithOwner' | while read repo; do
-              echo "$repo:"
               url=$(gh repo view $repo --json homepageUrl -q .homepageUrl)
               expires=$(curl -Ss "$url/.well-known/security.txt" | grep Expires | cut -f 2 -d ' ')
-              echo "security.txt expires $expires"
-              [ $(date -d "$expires" +%s) -ge $limit ] || gh api repos/$repo/pages/build -X POST
+              echo -n "$repo: security.txt expires $expires. "
+              if [ $(date -d "$expires" +%s) -ge $limit ]; then
+                echo "No need to rebuild"
+              else
+                echo "Rebuilding"
+                gh api repos/$repo/dispatches -f event_type=pages
+              fi
             done
