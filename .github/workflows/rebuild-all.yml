@@ -1,6 +1,19 @@
 name: Rebuild All Pages
 on:
   workflow_dispatch:
+    inputs:
+      home:
+        description: Home page
+        type: boolean
+        default: true
+      showcase:
+        description: Showcase pages
+        type: boolean
+        default: true
+      portfolio:
+        description: Portfolio pages
+        type: boolean
+        default: true
   schedule:
     - cron: '15 0 1 JAN *'
 
@@ -13,11 +26,39 @@ jobs:
         env:
           GH_USER: ${{ github.repository_owner }}
           GH_TOKEN: ${{ secrets.GH_TOKEN_REBUILD }}
+          BUILD_HOME: ${{ inputs.home && '1' || '0' }}
+          BUILD_SHOWCASE: ${{ inputs.showcase && '1' || '0' }}
+          BUILD_PORTFOLIO: ${{ inputs.portfolio && '1' || '0' }}
+          HOME_DOMAIN: ${{ github.repository_owner }}.co.uk
         run: |
           gh api users/$GH_USER/repos -X GET -f type=public --paginate -q \
           '.[] | select(.has_pages == true and .fork == false and (any(.topics[]; contains("noindex")) | not)) | .full_name' \
             | while read repo; do
-              echo $repo
-              gh api repos/$repo/dispatches -f event_type=pages
-              echo
+              build=0
+              url=$(gh api repos/$repo/pages -q '.html_url')
+              echo -n "$repo: "
+
+              case "$url" in
+                *"$HOME_DOMAIN/")
+                  echo -n "home page. "
+                  build=$BUILD_HOME
+                  ;;
+
+                *"$HOME_DOMAIN/"*)
+                  echo -n "showcase page. "
+                  build=$BUILD_SHOWCASE
+                  ;;
+
+                *)
+                  echo -n "portfolio page. "
+                  build=$BUILD_PORTFOLIO
+                  ;;
+              esac
+
+              if [ $build -eq 1 ]; then
+                echo "Rebuilding"
+                gh api repos/$repo/dispatches -f event_type=pages
+              else
+                echo "Ignoring"
+              fi
             done
