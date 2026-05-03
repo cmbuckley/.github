@@ -26,15 +26,15 @@ jobs:
         env:
           GH_USER: ${{ github.repository_owner }}
           GH_TOKEN: ${{ secrets.GH_TOKEN_REBUILD }}
-          BUILD_HOME: ${{ inputs.home && '1' || '0' }}
-          BUILD_SHOWCASE: ${{ inputs.showcase && '1' || '0' }}
-          BUILD_PORTFOLIO: ${{ inputs.portfolio && '1' || '0' }}
+          BUILD_HOME: ${{ github.event_name == 'workflow_dispatch' && inputs.home || 'true' }}
+          BUILD_SHOWCASE: ${{ github.event_name == 'workflow_dispatch' && inputs.showcase || 'true'}}
+          BUILD_PORTFOLIO: ${{ github.event_name == 'workflow_dispatch' && inputs.portfolio || 'true' }}
           HOME_DOMAIN: ${{ github.repository_owner }}.co.uk
         run: |
           gh api users/$GH_USER/repos -X GET -f type=public --paginate -q \
           '.[] | select(.has_pages == true and .fork == false and (any(.topics[]; contains("noindex")) | not)) | .full_name' \
             | while read repo; do
-              build=0
+              build=false
               url=$(gh api repos/$repo/pages -q '.html_url')
               echo -n "$repo: "
 
@@ -55,7 +55,7 @@ jobs:
                   ;;
               esac
 
-              if [ $build -eq 1 ]; then
+              if [ "$build" = "true" ]; then
                 echo "Rebuilding"
                 gh api repos/$repo/dispatches -f event_type=pages
               else
