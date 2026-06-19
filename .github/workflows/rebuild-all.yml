@@ -26,9 +26,9 @@ jobs:
         env:
           GH_USER: ${{ github.repository_owner }}
           GH_TOKEN: ${{ secrets.GH_TOKEN_REBUILD }}
-          BUILD_HOME: ${{ github.event_name == 'workflow_dispatch' && inputs.home || 'true' }}
-          BUILD_SHOWCASE: ${{ github.event_name == 'workflow_dispatch' && inputs.showcase || 'true'}}
-          BUILD_PORTFOLIO: ${{ github.event_name == 'workflow_dispatch' && inputs.portfolio || 'true' }}
+          BUILD_HOME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.home || 'true' }}
+          BUILD_SHOWCASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.showcase || 'true'}}
+          BUILD_PORTFOLIO: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.portfolio || 'true' }}
           HOME_DOMAIN: ${{ github.repository_owner }}.co.uk
         run: |
           gh api users/$GH_USER/repos -X GET -f type=public --paginate -q \
